@@ -1,0 +1,12 @@
+{
+	"__comments__": {
+		"naming rule":"",
+		"1":"eng_xxx are used in engine build-in features",
+		"2":"keyword_xxx are used to match keyword in JavaScript code",
+		"3":"re_xxx are used to match regual expression in JavaScript code"
+	},
+	"eng_non_word_percentage_in_big_string":234,
+	"eng_is_big_hex_string":235,
+    "keyword_payload":500,
+    "keyword_shellcode":501
+}
