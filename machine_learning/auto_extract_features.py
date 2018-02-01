@@ -54,3 +54,4 @@ os.system(cmd)
 cmd = 'python split.py {} {}'.format(NOR_FEATURE_FILE, nor_split_rate)
 print '[Split Set] '+ cmd
 os.system(cmd)
+###add
