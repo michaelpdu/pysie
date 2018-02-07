@@ -6,12 +6,12 @@ from dom_parser import *
 from js_feature_extractor import *
 from vbs_feature_extractor import *
 
-sys.path.append(os.path.join('..','..'))
+sys.path.append('..')
 from utility.file_type_detector import *
 from utility.encoding_checker import *
 from logging import *
 
-file_type_yara_file = os.path.join('..','..','utility','file_type.yar')
+file_type_yara_file = os.path.join('..','utility','file_type.yar')
 
 class SIEFeatureExtractor:
     """

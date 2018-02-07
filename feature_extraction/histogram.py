@@ -1,5 +1,5 @@
 import sys, operator
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 class Histogram:
     """"""
@@ -33,6 +33,6 @@ if __name__ == '__main__':
         hist.update(ch)
     features = hist.get_features(1000)
     # show histogram
-    plt.hist(features.values(), bins='auto')
-    plt.title("Histogram with 'auto' bins")
-    plt.show()
+    # plt.hist(features.values(), bins='auto')
+    # plt.title("Histogram with 'auto' bins")
+    # plt.show()
