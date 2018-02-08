@@ -1,0 +1,6 @@
+MODULE(tests)
+MODULE(pe)
+
+#ifdef CUCKOO
+MODULE(cuckoo)
+#endif

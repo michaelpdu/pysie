@@ -1,0 +1,12 @@
+all:
+	$(MAKE) -f Makefile.wrapper .deps
+	$(MAKE)
+
+.deps:
+	chmod +x configure
+	./configure
+
+clean:
+	# The "-" symbol before $(MAKE) suppressed errors that could occur in $(MAKE)
+	-$(MAKE) clean
+	rm -rf ./.deps

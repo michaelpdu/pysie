@@ -1,0 +1,5 @@
+1、根据所有sample的keyword进行排序，生成keyword.txt文件 ，已经按出现次数排序。auto_extract_key_word.py
+2、截取指定数目作为feature，生成feature_file 。generate_file.py
+3、有了featurefile之后，根据featurefile抽取所有sample特征，并将最后的结果归一化处理，生成特征文件。
+extract_feature_multi.py
+merge_feature_file.py
