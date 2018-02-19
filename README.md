@@ -49,7 +49,7 @@ In pysie.cfg, there're many configurations for feature extraction.
         "thread_num": 4
     },
 ```
-If *thread_num* is 1, it will be single process mode, no matter what vaule in *use_system_cpu_num*. When *thread_num* is larger than 1 and *use_system_cpu_num* is false, pysie.py will fork **thread_num** processes to execute feature extraction. If *thread_num* is larger than 1 and *use_system_cpu_num* is true, there will be **cpu_num** working processes.
+If **thread_num** is 1, it will be single process mode, no matter what vaule in **use_system_cpu_num**. When **thread_num** is larger than 1 and **use_system_cpu_num** is false, pysie.py will fork *thread_num* processes to execute feature extraction. If **thread_num** is larger than 1 and **use_system_cpu_num** is true, there will be *cpu_num* working processes.
 
 More detailed information about feature extraction, please refer to pysie.cfg
 
