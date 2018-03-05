@@ -252,3 +252,83 @@ rule tss_keyword_private
     condition:
         $a
 }
+
+rule tss_keyword_coin
+{
+    meta:
+        index = 25
+    strings:
+        $a = "coin" nocase
+    condition:
+        $a
+}
+
+rule tss_keyword_coinhive
+{
+    meta:
+        index = 26
+    strings:
+        $a = "coinhive" nocase
+    condition:
+        $a
+}
+
+rule tss_keyword_mine
+{
+    meta:
+        index = 27
+    strings:
+        $a = "mine" nocase
+    condition:
+        $a
+}
+
+rule tss_keyword_miner
+{
+    meta:
+        index = 28
+    strings:
+        $a = "miner" nocase
+    condition:
+        $a
+}
+
+rule tss_keyword_mining
+{
+    meta:
+        index = 29
+    strings:
+        $a = "mining" nocase
+    condition:
+        $a
+}
+
+rule tss_keyword_cryptonight
+{
+    meta:
+        index = 30
+    strings:
+        $a = "cryptonight" nocase
+    condition:
+        $a
+}
+
+rule tss_keyword_wasm
+{
+    meta:
+        index = 31
+    strings:
+        $a = "wasm" nocase
+    condition:
+        $a
+}
+
+rule tss_keyword_xmr
+{
+    meta:
+        index = 32
+    strings:
+        $a = "xmr" nocase
+    condition:
+        $a
+}

@@ -54,7 +54,7 @@ def check_folder(folder_path):
             elif 0 == status:
                 print('{}, normal file'.format(target))
             elif 1 == status:
-                os.remove(target)
+                # os.remove(target)
                 print('{}, accumulated issus'.format(target))
             elif 2 == status:
                 print('{}, cannot find end tag'.format(target))
