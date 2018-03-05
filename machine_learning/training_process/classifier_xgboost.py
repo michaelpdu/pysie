@@ -15,8 +15,10 @@ class TMXGBTrainer(TrainerInterface):
         # best params for SIE
         # best_params = {'learning_rate':0.2, 'max_depth':4, 'n_estimators':100}
         # best params for TSS
-        best_params = {'learning_rate':0.6, 'max_depth':4, 'n_estimators':50}
-        
+        # best_params = {'learning_rate':0.6, 'max_depth':4, 'n_estimators':50}
+        # best params for CoinMiner
+        best_params = {'learning_rate':0.1, 'max_depth':12, 'n_estimators':100}
+
         if self.config_['train']['search_best_params']:
             # searching best parameters
             param_dist = {'objective':'binary:logistic', 'n_jobs':multiprocessing.cpu_count()}
