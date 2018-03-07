@@ -80,8 +80,7 @@ class TmsieWrapper:
 
     def __TmiseInit(self, pattern, product):
         retcode = self.TMSIE_Initialize(pattern, product)
-        signed_number = c_long(retcode & 0xFFFFFFFF).value
-        info("SIE initializatioin: return code: {}".format(signed_number))
+        info("SIE initializatioin: return code: {}".format(retcode))
 
     def TMSIE_SetOption(self, opt, content, size):
         c_opt = c_int(opt)
