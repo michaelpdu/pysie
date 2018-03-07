@@ -3,10 +3,21 @@ This project is to build HTML/JS feature extraction and model trainning
 
 ## Feature Extraction
 
+### pysie.py
 In feature_extraction, you could use *pysie.py* to extract features and dump in libsvm data format.
 
 ```
 >> python pysie.py --dump-feature target_path --label label --dest-file [dest_file_path]
+Note:
+    a) if dest_file_path is not specified, feature list will be dumped into original_file_name.libsvm.fea
+    b) label is 1 or 0, here 1 indicates malicious, 0 indicates normal
+```
+
+### talos.py
+For TMSIE's compatiblity, you could use *talos.py* to extract features and dump in libsvm data format.
+
+```
+>> python talos.py --dump-feature target_path --label label --dest-file [dest_file_path]
 Note:
     a) if dest_file_path is not specified, feature list will be dumped into original_file_name.libsvm.fea
     b) label is 1 or 0, here 1 indicates malicious, 0 indicates normal
