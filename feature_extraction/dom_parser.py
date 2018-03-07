@@ -94,15 +94,15 @@ class DOMParser:
             else:
                 pass
         
-        # check TSS keywords in HTML content
-        if self.config_['enable_tss_keywords']:
-            tss_feature_yara_rule = self.config_['tss_keywords_yara_rule']
-            with open(tss_feature_yara_rule, 'rb') as fh:
-                tss_feature_rules = fh.read()
-            tss_yara_fea_analyzer = YaraFeatureAnalyzer(tss_feature_rules)
-            index = self.config_['tss_keywords_base_index']
-            tss_yara_fea_analyzer.analyze_content(content, index)
-            self.dom_features.update(tss_yara_fea_analyzer.get_features())
+        # check manual keywords in HTML content
+        if self.config_['enable_manual_keywords']:
+            manual_feature_yara_rule = self.config_['manual_keywords_yara_rule']
+            with open(manual_feature_yara_rule, 'rb') as fh:
+                manual_feature_rules = fh.read()
+            manual_yara_fea_analyzer = YaraFeatureAnalyzer(manual_feature_rules)
+            index = self.config_['manual_keywords_base_index']
+            manual_yara_fea_analyzer.analyze_content(content, index)
+            self.dom_features.update(manual_yara_fea_analyzer.get_features())
 
     def get_tag_relationship_statistic(self):
         return self.tag_relation_map_

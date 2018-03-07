@@ -59,10 +59,10 @@ if __name__ == '__main__':
     vbs_yara_fea_analyzer.analyze_content(content, config_map['feature_extraction']['vbs_base_index'])
     print vbs_yara_fea_analyzer.get_features()
 
-    tss_feature_yara_rule = config_map['feature_extraction']['tss_keywords_yara_rule']
-    with open(tss_feature_yara_rule, 'rb') as fh:
-        tss_feature_rules = fh.read()
-    tss_yara_fea_analyzer = YaraFeatureAnalyzer(tss_feature_rules)
-    index = config_map['feature_extraction']['tss_keywords_base_index']
-    tss_yara_fea_analyzer.analyze_content(content, index)
-    print tss_yara_fea_analyzer.get_features()
+    manual_feature_yara_rule = config_map['feature_extraction']['manual_keywords_yara_rule']
+    with open(manual_feature_yara_rule, 'rb') as fh:
+        manual_feature_rules = fh.read()
+    manual_yara_fea_analyzer = YaraFeatureAnalyzer(manual_feature_rules)
+    index = config_map['feature_extraction']['manual_keywords_base_index']
+    manual_yara_fea_analyzer.analyze_content(content, index)
+    print manual_yara_fea_analyzer.get_features()
