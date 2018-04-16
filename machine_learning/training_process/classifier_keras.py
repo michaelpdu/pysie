@@ -27,7 +27,7 @@ class TMSAKerasTrainer(TrainerInterface):
 
     def train(self):
         # convert class vectors to binary class matrices
-        y_train = keras.utils.to_categorical(self.y_, 2)
+        y_train = keras.utils.to_categorical(self.y_, self.num_classes_)
         # enc = OneHotEncoder(sparse=False)  # Key here is sparse=False!
         # y_train = enc.fit_transform(self.y_.reshape((self.y_.shape[0]), 1))
         # y = np.array(self.y_)
@@ -42,7 +42,7 @@ class TMSAKerasTrainer(TrainerInterface):
         self.model_.add(Dropout(0.2))
         self.model_.add(Dense(64, activation='relu'))
         self.model_.add(Dropout(0.2))
-        self.model_.add(Dense(2, activation='softmax'))
+        self.model_.add(Dense(self.num_classes_, activation='softmax'))
         #self.model_.add(Dense(2, activation='sigmoid'))
 
         self.model_.summary()
