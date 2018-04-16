@@ -6,6 +6,7 @@ import collections
 import time
 from optparse import OptionParser
 from sie_feature_extractor import *
+from raw_content_extractor import *
 import multiprocessing
 from logging import *
 
@@ -21,12 +22,17 @@ class PySIE:
         info('Extract feature: '+file_path)
         with open(file_path, 'rb') as fh:
             content = fh.read()
-            feature_extractor = SIEFeatureExtractor(self.config_['feature_extraction'])
-            features = feature_extractor.extract(file_path, content)
-            if features == None:
-                warning('[WARNING][PySIE.extract_feature] Unknown File Type, file path: ' + file_path)
-                return {}
-            return features
+            if self.config_['common']['use_raw_content']:
+                feature_extractor = RawContentExtractor(self.config_['raw_content_extraction'])
+                features = feature_extractor.extract(file_path, content)
+                return features
+            else:
+                feature_extractor = SIEFeatureExtractor(self.config_['feature_extraction'])
+                features = feature_extractor.extract(file_path, content)
+                if features == None:
+                    warning('[WARNING][PySIE.extract_feature] Unknown File Type, file path: ' + file_path)
+                    return {}
+                return features
 
     def convert_to_libsvm_format(self, label, features, comments):
         feature_msg = ''
@@ -38,7 +44,10 @@ class PySIE:
                     feature_msg += '{}:{} '.format(i, value)
         else:
             feature_msg = features
-        return '{} {} {}:0 # {}\n'.format(label, feature_msg, self.max_dim_index_, comments)
+        if self.config_['common']['use_raw_content']:
+            return '{} {} # {}\n'.format(label, feature_msg, comments)
+        else:
+            return '{} {} {}:0 # {}\n'.format(label, feature_msg, self.max_dim_index_, comments)
 
     def dump_feature(self, label, target_path, dest_path):
         with open(dest_path, 'w') as output:
@@ -97,7 +106,17 @@ def dump_feature_multi_thread(config, label, target_path, dest_path):
     file_list_map = {}
     for i in range(0,thread_num):
         file_list_map[i] = []
-    with open(dest_path, 'w') as output:
+    if config['common']['target_is_filelist']:
+        if not os.path.isfile(target_path):
+            print('[ERROR] config `target_is_filelist` enable, target must be a file list!')
+            exit(-1)
+        with open(target_path, 'r') as fh:
+            i = 0
+            for line in fh.readlines():
+                file_list_map[i%thread_num].append(line.strip())
+                i += 1
+    else:
+        # with open(dest_path, 'w') as output:
         if os.path.isdir(target_path):
             i = 0
             for root, dirs, files in os.walk(target_path):
