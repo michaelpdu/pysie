@@ -3,7 +3,8 @@ import os, json
 from classifier_base import *
 import keras
 from keras.models import *
-from keras.layers import Dense, Dropout
+from keras.layers import Dense, Dropout, Embedding, LSTM
+from keras.layers import Conv1D, GlobalAveragePooling1D, MaxPooling1D
 from keras.optimizers import RMSprop
 from sklearn.preprocessing import OneHotEncoder
 from keras.wrappers.scikit_learn import *
@@ -38,27 +39,37 @@ class TMSAKerasTrainer(TrainerInterface):
         #self.model_.add(Dense(1024, activation='relu'))
         #self.model_.add(Dropout(0.2))
         #self.model_.add(Dense(512, activation='relu'))
-        self.model_.add(Dense(512, activation='relu', input_dim=self.input_dim_))
-        self.model_.add(Dropout(0.2))
-        self.model_.add(Dense(64, activation='relu'))
-        self.model_.add(Dropout(0.2))
+
+        # self.model_.add(Dense(512, activation='relu', input_dim=self.input_dim_))
+        # self.model_.add(Dropout(0.2))
+        # self.model_.add(Dense(64, activation='relu'))
+        # self.model_.add(Dropout(0.2))
+        # self.model_.add(Dense(self.num_classes_, activation='softmax'))
+        ## self.model_.add(Dense(2, activation='sigmoid'))
+
+        self.model_.add(Embedding(256, output_dim=256))
+        self.model_.add(Conv1D(1024, 3, activation='relu'))
+        self.model_.add(Conv1D(512, 3, activation='relu'))
+        self.model_.add(MaxPooling1D(3))
+        self.model_.add(Conv1D(128, 3, activation='relu'))
+        self.model_.add(Conv1D(128, 3, activation='relu'))
+        self.model_.add(GlobalAveragePooling1D())
+        self.model_.add(Dropout(0.5))
         self.model_.add(Dense(self.num_classes_, activation='softmax'))
-        #self.model_.add(Dense(2, activation='sigmoid'))
+
+        # self.model_.add(Embedding(256, output_dim=256))
+        # self.model_.add(LSTM(128))
+        # self.model_.add(Dropout(0.5))
+        # self.model_.add(Dense(self.num_classes_, activation='softmax'))
 
         self.model_.summary()
 
         self.model_.compile(loss='categorical_crossentropy',
-                      optimizer=RMSprop(),
+                      optimizer='rmsprop',
                       metrics=['accuracy'])
 
         X_array = csr_matrix_to_ndarray(self.X_)       
-
-        history = self.model_.fit(X_array, y_train,
-                            batch_size=self.batch_size_,
-                            epochs=self.epochs_,
-                            verbose=1,
-                            validation_data=(X_array, y_train))
-        #print history
+        self.model_.fit(X_array, y_train, batch_size=self.batch_size_, epochs=self.epochs_, verbose=1)
 
     def save_model(self, model_path = None):
         if model_path:
