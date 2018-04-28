@@ -1,6 +1,0 @@
-1、根据所有sample的keyword进行排序，生成keyword.txt文件 auto_extract_key_word.py
-2、输入keyword.txt，all_sample_count,计算所有count>10的keyword TF_IDF的值,输出按TF_IDF排好序的keyword_by_TF_IDF.txt。cal_TF_IDF.py 
-3、截取指定书目作为feature，生成feature_file 。generate_file.py
-4、有了featurefile之后，根据featurefile抽取所有sample特征，生成特征文件。
-extract_feature_multi.py
-merge_feature_file.py
