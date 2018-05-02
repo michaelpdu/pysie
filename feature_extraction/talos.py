@@ -103,7 +103,7 @@ class Talos:
                     return None
             except Exception,e:
                 warning("Exception in getting feature: " + e)
-
+                return None
         except Exception,e:
             warning("Exception in fake SIE scan: " + e)
             return None
@@ -116,12 +116,16 @@ class Talos:
             for root, dir, samples in os.walk(target_path):
                 for sample in samples:
                     sample_path = os.path.join(root, sample)
-                    fh.write(self.get_libsvm_format(label, self.get_features(sample_path), sample_path))
+                    features = self.get_features(sample_path)
+                    if features != None:
+                        fh.write(self.get_libsvm_format(label, features, sample_path))
 
     def dump_features_from_list(self, sample_path_list, dest_path, label):
         with open(dest_path, 'w') as fh:
             for sample_path in sample_path_list:
-                fh.write(self.get_libsvm_format(label, self.get_features(sample_path), sample_path))
+                features = self.get_features(sample_path)
+                if features != None:
+                    fh.write(self.get_libsvm_format(label, features, sample_path))
 
 def process_file_list_by_talos(config, id, label, file_list, dest_file):
     msg = 'Run process: {}, size of file_list: {}'.format(id, len(file_list))
