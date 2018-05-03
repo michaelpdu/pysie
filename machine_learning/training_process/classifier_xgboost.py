@@ -20,6 +20,11 @@ class TMXGBTrainer(TrainerInterface):
         best_params = {'learning_rate':0.1, 'max_depth':12, 'n_estimators':100}
 
         if self.config_['train']['search_best_params']:
+            # set number of parallel threads used to run xgboost            
+            n_jobs = self.config_['model']['xgboost']['nthread']
+            if self.config_['model']['xgboost']['use_system_cpu_num']:
+                n_jobs = multiprocessing.cpu_count()
+
             # searching best parameters
             param_dist = {'objective':'binary:logistic', 'n_jobs':multiprocessing.cpu_count()}
             xgb_model = XGBClassifier(param_dist)
@@ -31,7 +36,7 @@ class TMXGBTrainer(TrainerInterface):
             # use f2_score as scoring
             f2_score = make_scorer(fbeta_score, beta=2)
             gs = GridSearchCV(estimator=xgb_model, param_grid=test_params, cv=5, verbose=10,\
-                                 scoring = f2_score, n_jobs=1)
+                                 scoring = f2_score, n_jobs=n_jobs)
             # # use auc as scoring
             # gs = GridSearchCV(estimator=xgb_model, param_grid=test_params, cv=5, verbose=10,\
             #                      scoring = 'roc_auc', n_jobs=1)
