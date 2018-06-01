@@ -18,9 +18,10 @@ def search_similar_file(base_file_path, dest_dir_path, dist):
         for name in files:
             file_path = os.path.join(root, name)
             value = get_tlsh(file_path)
-            dist_value = tlsh.diff(base_tlsh, value)
-            if dist_value <= dist:
-                print('File: {}, Distance: {}'.format(file_path, dist_value))
+            if value:
+                dist_value = tlsh.diff(base_tlsh, value)
+                if dist_value <= dist:
+                    print('File: {}, Distance: {}'.format(file_path, dist_value))
 
 help_msg = """
 Usage:
