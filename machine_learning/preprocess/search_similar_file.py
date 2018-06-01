@@ -29,7 +29,7 @@ Usage:
 """
 
 if __name__ == "__main__":
-    search_similar_file(sys.argv[1], sys.argv[2], 200)
+    search_similar_file(sys.argv[1], sys.argv[2], 100)
 
 
 
