@@ -6,12 +6,13 @@ from keras.models import *
 from keras.layers import Dense, Dropout, Embedding, LSTM
 from keras.layers import Conv1D, GlobalAveragePooling1D, MaxPooling1D
 from keras.optimizers import RMSprop
-from sklearn.preprocessing import OneHotEncoder
+# from sklearn.preprocessing import OneHotEncoder
 from keras.wrappers.scikit_learn import *
 from sklearn.datasets import load_svmlight_file
 import numpy as np
 from scipy.sparse import csr_matrix
-
+from keras.utils.training_utils import multi_gpu_model
+import tensorflow as tf
 
 def csr_matrix_to_ndarray(m):
     return csr_matrix(m, dtype=np.float32).toarray()
@@ -25,6 +26,9 @@ class TMSAKerasTrainer(TrainerInterface):
         self.num_classes_ = config['model']['keras']['num_classes']
         self.batch_size_ = config['model']['keras']['batch_size']
         self.epochs_ = config['model']['keras']['epochs']
+        #
+        self.use_multi_gpu_ = config['model']['keras']['use_multi_gpu']
+        self.gpu_num_ = config['model']['keras']['gpu_num']
 
     def train(self):
         # convert class vectors to binary class matrices
@@ -33,43 +37,73 @@ class TMSAKerasTrainer(TrainerInterface):
         # y_train = enc.fit_transform(self.y_.reshape((self.y_.shape[0]), 1))
         # y = np.array(self.y_)
 
-        self.model_ = Sequential()
-        #self.model_.add(Dense(10240, activation='relu', input_dim=self.input_dim_))
-        #self.model_.add(Dropout(0.2))
-        #self.model_.add(Dense(1024, activation='relu'))
-        #self.model_.add(Dropout(0.2))
-        #self.model_.add(Dense(512, activation='relu'))
+        with tf.device('/cpu:0'):
+            self.model_ = Sequential()
 
-        # self.model_.add(Dense(512, activation='relu', input_dim=self.input_dim_))
-        # self.model_.add(Dropout(0.2))
-        # self.model_.add(Dense(64, activation='relu'))
-        # self.model_.add(Dropout(0.2))
-        # self.model_.add(Dense(self.num_classes_, activation='softmax'))
-        ## self.model_.add(Dense(2, activation='sigmoid'))
+            self.model_.add(Dense(512, activation='relu', input_dim=self.input_dim_))
+            self.model_.add(Dropout(0.2))
+            self.model_.add(Dense(256, activation='relu'))
+            self.model_.add(Dropout(0.2))
+            self.model_.add(Dense(128, activation='relu'))
+            self.model_.add(Dropout(0.2))
+            self.model_.add(Dense(64, activation='relu'))
+            self.model_.add(Dropout(0.2))
+            self.model_.add(Dense(self.num_classes_, activation='softmax'))
 
-        self.model_.add(Embedding(256, output_dim=256))
-        self.model_.add(Conv1D(1024, 3, activation='relu'))
-        self.model_.add(Conv1D(512, 3, activation='relu'))
-        self.model_.add(MaxPooling1D(3))
-        self.model_.add(Conv1D(128, 3, activation='relu'))
-        self.model_.add(Conv1D(128, 3, activation='relu'))
-        self.model_.add(GlobalAveragePooling1D())
-        self.model_.add(Dropout(0.5))
-        self.model_.add(Dense(self.num_classes_, activation='softmax'))
+            # self.model_.add(Dense(512, activation='relu', input_dim=self.input_dim_))
+            # self.model_.add(Dropout(0.2))
+            # self.model_.add(Dense(512, activation='relu'))
+            # self.model_.add(Dropout(0.2))
+            # self.model_.add(Dense(512, activation='relu'))
+            # self.model_.add(Dropout(0.2))
+            # self.model_.add(Dense(256, activation='relu'))
+            # self.model_.add(Dropout(0.2))
+            # self.model_.add(Dense(256, activation='relu'))
+            # self.model_.add(Dropout(0.2))
+            # self.model_.add(Dense(128, activation='relu'))
+            # self.model_.add(Dropout(0.2))
+            # self.model_.add(Dense(64, activation='relu'))
+            # self.model_.add(Dropout(0.2))
+            # self.model_.add(Dense(self.num_classes_, activation='softmax'))
+            ## self.model_.add(Dense(2, activation='sigmoid'))
 
-        # self.model_.add(Embedding(256, output_dim=256))
-        # self.model_.add(LSTM(128))
-        # self.model_.add(Dropout(0.5))
-        # self.model_.add(Dense(self.num_classes_, activation='softmax'))
+            # self.model_.add(Embedding(256, output_dim=256))
+            # self.model_.add(Conv1D(1024, 3, activation='relu'))
+            # self.model_.add(Conv1D(512, 3, activation='relu'))
+            # self.model_.add(MaxPooling1D(3))
+            # self.model_.add(Conv1D(128, 3, activation='relu'))
+            # self.model_.add(Conv1D(128, 3, activation='relu'))
+            # self.model_.add(GlobalAveragePooling1D())
+            # self.model_.add(Dropout(0.5))
+            # self.model_.add(Dense(self.num_classes_, activation='softmax'))
 
-        self.model_.summary()
+            # self.model_.add(Embedding(256, output_dim=16))
+            # self.model_.add(Conv1D(512, 3, activation='relu'))
+            # self.model_.add(MaxPooling1D(3))
+            # self.model_.add(Conv1D(128, 3, activation='relu'))
+            # self.model_.add(GlobalAveragePooling1D())
+            # self.model_.add(Dropout(0.5))
+            # self.model_.add(Dense(self.num_classes_, activation='softmax'))
 
-        self.model_.compile(loss='categorical_crossentropy',
-                      optimizer='rmsprop',
-                      metrics=['accuracy'])
+            # self.model_.add(Embedding(256, output_dim=256))
+            # self.model_.add(LSTM(128))
+            # self.model_.add(Dropout(0.5))
+            # self.model_.add(Dense(self.num_classes_, activation='softmax'))
 
-        X_array = csr_matrix_to_ndarray(self.X_)       
-        self.model_.fit(X_array, y_train, batch_size=self.batch_size_, epochs=self.epochs_, verbose=1)
+            self.model_.summary()
+
+        X_array = csr_matrix_to_ndarray(self.X_)
+        if self.use_multi_gpu_:
+            parallel_model = multi_gpu_model(self.model_, gpus=self.gpu_num_)
+            parallel_model.compile(loss='categorical_crossentropy',
+                        optimizer='rmsprop',
+                        metrics=['accuracy'])
+            parallel_model.fit(X_array, y_train, batch_size=self.batch_size_, epochs=self.epochs_, verbose=1)
+        else:
+            self.model_.compile(loss='categorical_crossentropy',
+                        optimizer='rmsprop',
+                        metrics=['accuracy'])
+            self.model_.fit(X_array, y_train, batch_size=self.batch_size_, epochs=self.epochs_, verbose=1)
 
     def save_model(self, model_path = None):
         if model_path:

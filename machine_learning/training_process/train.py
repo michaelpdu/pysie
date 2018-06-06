@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import time
+from argparse import ArgumentParser
 from sklearn.datasets import load_svmlight_file
 from classifier_svm import SVMTrainer
 from classifier_xgboost import TMXGBTrainer
@@ -66,11 +67,21 @@ class TrainerHelper:
 
 help_msg = """
 Usage:
-    > python train.py training-set
+    > python train.py [-c|--config] config-file [-d|--data] training-set
 """
 
 if __name__ == '__main__':
-    with open('config.json', 'rb') as fh:
+    arg_parser = ArgumentParser()
+    arg_parser.add_argument("-c", "--config", dest='config_file', help="specify config file")
+    arg_parser.add_argument("-d", "--data", dest='training_set', help="specify training set")
+    args = arg_parser.parse_args()
+    config_file = 'config.json'
+    if args.config_file:
+       config_file = args.config_file 
+    with open(config_file, 'rb') as fh:
         config = json.load(fh)
     helper = TrainerHelper(config)
-    helper.train(sys.argv[1])
+    begin_time = time.time()
+    helper.train(args.training_set)
+    msg = 'Time: {}'.format(time.time() - begin_time)
+    print(msg)

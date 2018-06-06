@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import json
+from argparse import ArgumentParser
 from file_helper import *
 from sklearn.datasets import load_svmlight_file
 from classifier_svm import SVMClassifier
@@ -123,11 +124,18 @@ class ClassifierHelper:
 
 help_msg = """
 Usage:
-    > python predict.py testing-file
+    > python predict.py [-c|--config] config-file [-d|--data] testing-set
 """
 
 if __name__ == '__main__':
-    with open('config.json', 'rb') as fh:
+    arg_parser = ArgumentParser()
+    arg_parser.add_argument("-c", "--config", dest='config_file', help="specify config file")
+    arg_parser.add_argument("-d", "--data", dest='testing_set', help="specify testing set")
+    args = arg_parser.parse_args()
+    config_file = 'config.json'
+    if args.config_file:
+       config_file = args.config_file 
+    with open(config_file, 'rb') as fh:
         config = json.load(fh)
     helper = ClassifierHelper(config)
-    helper.score(sys.argv[1])
+    helper.score(args.testing_set)
