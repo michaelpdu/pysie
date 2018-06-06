@@ -15,36 +15,34 @@ def get_tlsh(file_path):
         print(e)
         return None
 
-def gen_csv_for_file(file_path, output_dir):
+def gen_csv_for_file(file_path, dest_file):
     tlsh_hash = get_tlsh(file_path)
     dir_path, file_name = os.path.split(file_path)
-    csv_file = os.path.join(output_dir, 'file_tlsh_{}_{}.csv'.format(file_name, tlsh_hash))
-    with open(csv_file, 'w') as fh:
-        fh.write('{},{}\n'.format(file_path, tlsh_hash))
-    return csv_file
+    with open(dest_file, 'w') as fh:
+        fh.write('{}\t{}\n'.format(file_path, tlsh_hash))
+    return dest_file
 
-def gen_csv_for_dir(input_dir, output_dir):
+def gen_csv_for_dir(input_dir, dest_file):
     if input_dir[-1] == '/':
         input_dir = input_dir[0:-1]
-    parent_dir_path, dir_name = os.path.split(input_dir)
-    csv_file = os.path.join(output_dir, 'dir_tlsh_{}.csv'.format(dir_name))
-    
-    with open(csv_file, 'w') as fh:
+    with open(dest_file, 'w') as fh:
         for root, dirs, files in os.walk(input_dir):
             for name in files:
                 file_path = os.path.join(root, name)
                 tlsh_hash = get_tlsh(file_path)
-                fh.write('{},{}\n'.format(file_path, tlsh_hash))
-    return csv_file
+                fh.write('{}\t{}\n'.format(file_path, tlsh_hash))
+    return dest_file
 
-def gen_csv(target_path, output_dir):
+def gen_csv(target_path, dest_file):
     if not os.path.exists(target_path):
         print('ERROR: cannot find {}'.format(target_path))
         return None
+    if not os.path.exists(os.path.dirname(dest_file)):
+        os.makedirs(os.path.dirname(dest_file))
     if os.path.isfile(target_path):
-        return gen_csv_for_file(target_path, output_dir)
+        return gen_csv_for_file(target_path, dest_file)
     elif os.path.isdir(target_path):
-        return gen_csv_for_dir(target_path, output_dir)
+        return gen_csv_for_dir(target_path, dest_file)
     else:
         return None
 
@@ -56,7 +54,7 @@ def gen_csv(target_path, output_dir):
 
 def dump_file_tlsh(file_path):
     tlsh_value = get_tlsh(file_path)
-    print('File:{}, TLSH:{}'.format(file_path, tlsh_value))
+    print('File:{}\tTLSH:{}'.format(file_path, tlsh_value))
 
 def dump_dir_tlsh(dir_path):
     for root, dirs, files in os.walk(dir_path):
@@ -82,9 +80,9 @@ help_msg = """
     1. get TLSH value from file
         >> python tlsh_tool.py --tlsh file_path
     2. generate CSV file
-        >> python tlsh_tool.py --gen target_path --outdir output_dir
+        >> python tlsh_tool.py --gen sample_dir --dest_file dest_path
     3. dump TLSH value in terminal
-        >> python tlsh_tool.py --dump target_path
+        >> python tlsh_tool.py --dump file_path/sample_dir
 """
 
 if __name__ == '__main__':
@@ -92,7 +90,7 @@ if __name__ == '__main__':
         parser = OptionParser(usage=help_msg)
         parser.add_option("--tlsh", dest="tlsh_source", help="specify file path, and print TLSH value")
         parser.add_option("--gen", dest="csv_source", help="specify file path, and generate CSV file")
-        parser.add_option("--outdir", dest="output_dir", help="specify output dir")
+        parser.add_option("--dest_file", dest="dest_file", help="specify dest file")
         parser.add_option("--dump", dest="dump_target", help="specify file path or dir path")
         (options, args) = parser.parse_args()
 
@@ -103,7 +101,7 @@ if __name__ == '__main__':
             tlsh_hash = get_tlsh(options.tlsh_source)
             print(tlsh_hash)
         elif options.csv_source:
-            print('CSV: {}'.format(gen_csv(options.csv_source, options.output_dir)))
+            print('CSV: {}'.format(gen_csv(options.csv_source, options.dest_file)))
         # elif options.scan_target:
         #     tlsh_output = scan_csv(options.scan_target)
         #     # print(tlsh_output)
