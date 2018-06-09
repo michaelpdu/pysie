@@ -123,7 +123,7 @@ class SplitHelper:
             lines = fh.readlines()
         
         for line in lines:
-            src_path = line.split('#')[1].strip().split(' ')[0]
+            src_path = line.split('#')[1].split('@')[0].strip()
             dst_path = os.path.join(dst_dir, os.path.basename(src_path))
             if not os.path.exists(dst_path):
                 shutil.move(src_path, dst_path)
