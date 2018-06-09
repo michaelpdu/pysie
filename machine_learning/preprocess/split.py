@@ -116,14 +116,17 @@ class SplitHelper:
         self.save_to_file(self.group_a_, lines, file_a)
         self.save_to_file(self.group_b_, lines, file_b)
         return file_a, file_b
-    def move_samples(self, label_group, dst_dir):
+    def move_samples(self, file_path, dst_dir):
         if not os.path.exists(dst_dir):
             os.makedirs(dst_dir)
-        for label in label_group:
-            for filepath in label_group[label]:
-                dst_path = os.path.join(dst_dir, os.path.basename(filepath))
-                if not os.path.exists(dst_path):
-                    shutil.move(filepath, dst_path)
+        with open(file_path, 'rb') as fh:
+            lines = fh.readlines()
+        
+        for line in lines:
+            src_path = line.split('#')[1].split(' ')[0]
+            dst_path = os.path.join(dst_dir, os.path.basename(src_path))
+            if not os.path.exists(dst_path):
+                shutil.move(src_path, dst_path)
 
     def analyze(self, file_path, percentage=0.7, dst_dir=None):
         # step 1: load data from file
@@ -139,10 +142,10 @@ class SplitHelper:
             split_method = 'random'
             self.split(percentage, split_method)
             # step 4: generate new files
-            self.generate_two_files(file_path, split_method, percentage)
+            file_a, file_b = self.generate_two_files(file_path, split_method, percentage)
             if dst_dir:
-                self.move_samples(self.group_a_, os.path.join(dst_dir, "group_a"))
-                self.move_samples(self.group_b_, os.path.join(dst_dir, "group_b"))
+                self.move_samples(file_a, os.path.join(dst_dir, "group_a"))
+                self.move_samples(file_b, os.path.join(dst_dir, "group_b"))
 
 
 
@@ -163,10 +166,10 @@ For example:
 if __name__ == '__main__':
     try:
         s = SplitHelper()
-        s.set_kmeans_num(20)
-        if len(sys.argv) == 2:
+        s.set_kmeans_num(30)
+        if len(sys.argv) == 3:
             s.analyze(sys.argv[1], float(sys.argv[2]))
-        elif len(sys.argv) == 3:
+        elif len(sys.argv) == 4:
             s.analyze(sys.argv[1], float(sys.argv[2]), sys.argv[3])
     except Exception,e:
         print help_msg
