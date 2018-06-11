@@ -50,6 +50,9 @@ def remove_dimension_by_index(ori_feature_file, index_m, index_n, new_feature_fi
                 new_line += sample_path
                 fh_output.write(new_line)
 
+def pickle_file(ori_feature_file, pickle_file, new_feature_file):
+    pass
+
 help_msg = """
 Usage:
     (1) extract all of sha1 list from feature file
@@ -58,12 +61,13 @@ Usage:
     >> python tool.py -n ori_feature_file sha1_list new_feature_file
     (3) remove feature dimension from m to n
     >> python tool.py -r ori_feature_file m n new_feature_file
-
+    (4) save feature by pickle file
+    >> python tool.py -p ori_feature_file pickle_file new_feature_file
 """
 
 if __name__ == '__main__':
     try:
-        if sys.argv[1] != '-s' and sys.argv[1] != '-n' and sys.argv[1] != '-r':
+        if sys.argv[1] != '-s' and sys.argv[1] != '-n' and sys.argv[1] != '-r' and sys.argv[1] != '-p':
             print(help_msg)
             exit(-1)
     except Exception, e:
@@ -75,6 +79,8 @@ if __name__ == '__main__':
         generate_features_file_by_sha1(sys.argv[2], sys.argv[3], sys.argv[4])
     elif sys.argv[1] == '-r':
         remove_dimension_by_index(sys.argv[2], int(sys.argv[3]), int(sys.argv[4]), sys.argv[5])
+    elif sys.argv[1] == '-p':
+        pickle_file(sys.argv[2], sys.argv[3], sys.argv[4])
     else:
         print(help_msg)
 

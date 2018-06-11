@@ -1,0 +1,13 @@
+{
+    "version": "1.0.1000",
+    "common": {
+      "model_file": "/sa/middle_dir/ek_detection/keras.h5",
+      "output": "/sa/middle_dir/ek_detection/adversarial"
+    },
+    "crafter": {
+      "__crafter_type__": {
+          "options":"[carlini|deepfool|fgsm|newtonfool|saliency_map|universal_perturbation|virtual_adversarial]"
+      },
+      "type": "fgsm"
+    }
+  }
