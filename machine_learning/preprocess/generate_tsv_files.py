@@ -16,14 +16,17 @@ X, y = load_svmlight_file(svm_file_path)
 path_list = load_svm_file(svm_file_path)
 print('Count of path list: %d' % len(path_list))
 
+dir_path, file_name = os.path.split(svm_file_path)
+name_wo_ext, ext = os.path.splitext(file_name)
+
 X = X.toarray()
-with open('features.tsv', 'w') as fh:
+with open(os.path.join(dir_path, name_wo_ext+'_features.tsv'), 'w') as fh:
     for line in X:
         fh.write('\t'.join(str(e) for e in line))
-        fh.write('\r\n')
+        fh.write('\n')
 
-with open('label.tsv', 'w') as fh:
+with open(os.path.join(dir_path, name_wo_ext+'_label.tsv'), 'w') as fh:
     count = y.shape[0]
     print('Count of sample label: %d' % count)
     for index in range(0, count):
-        fh.write('{}\t{}\r\n'.format(y[index], path_list[index]))
+        fh.write('{}\t{}\n'.format(y[index], path_list[index]))
