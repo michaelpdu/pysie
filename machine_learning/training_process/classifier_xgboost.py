@@ -5,6 +5,7 @@ from xgboost.sklearn import XGBClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import fbeta_score, make_scorer
 import multiprocessing
+import pickle
 
 class TMXGBTrainer(TrainerInterface):
     def __init__(self, config):
@@ -69,6 +70,22 @@ class TMXGBTrainer(TrainerInterface):
         #
         num_round = int(best_params['n_estimators'])
         self.model_ = xgb.train(plst, training_set, num_round, evallist)
+
+        print('\nFeature Score:')
+        feature_score = self.model_.get_fscore()
+        print(feature_score)
+        print("Save to file: xgb_feature_score.pkl")
+        with open('xgb_feature_score.pkl', 'wb') as fh:
+            pickle.dump(feature_score, fh, pickle.HIGHEST_PROTOCOL)
+
+        # from collections import OrderedDict
+        # order_feature_score = OrderedDict(sorted(feature_score.items()))
+        # print(order_feature_score)
+
+        if self.config_['model']['xgboost']['plot_importance']:
+            import matplotlib
+            matplotlib.use('Agg')
+            xgb.plot_importance(self.model_)
 
     def save_model(self, model_path):
         if model_path:

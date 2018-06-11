@@ -11,7 +11,7 @@
         "option for model":"[svm|xgboost|libsvm|keras]"
     },
     "model": "xgboost",
-    "search_best_params": true
+    "search_best_params": false
   },
   "model": {
     "svm": {
@@ -21,7 +21,8 @@
     "xgboost": {
       "model_name": "xgb.model",
       "use_system_cpu_num": true,
-      "nthread": 4
+      "nthread": 4,
+      "plot_importance": false
     },
     "libsvm": {
       "model_name": "libsvm_linear.model"

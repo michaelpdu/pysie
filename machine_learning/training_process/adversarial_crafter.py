@@ -10,6 +10,9 @@ from art.classifiers import KerasClassifier
 from art.attacks.deepfool import DeepFool
 from art.attacks.fast_gradient import FastGradientMethod
 from art.attacks.carlini import CarliniL2Method
+from art.utils import random_targets
+
+import tensorflow as tf
 
 # os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
@@ -67,15 +70,32 @@ class AdversarialCrafter:
             print('Accuracy on adversarial samples: %.2f%%' % (acc * 100))
         elif crafter_type == 'carlini':
             print("Build Carlini crafter ...")
-            adv_crafter = CarliniL2Method(classifier)
-            x_adv = adv_crafter.generate(x=X, y=y)
-            # save adversary samples to file
-            np.savetxt('adv_carlini.out', x_adv, delimiter=',')
-            # Evaluate the classifier on the adversarial samples
-            preds = np.argmax(classifier.predict(x_adv), axis=1)
-            acc = np.sum(preds == y) / y.shape[0]
+            # with tf.device('/device:GPU:0'):
+            cl2m = CarliniL2Method(classifier=classifier, targeted=True, max_iter=100, binary_search_steps=10,
+                        learning_rate=2e-2, initial_const=3, decay=1e-2)
+            params = {'y': random_targets(y, classifier.nb_classes)}
+            x_test_adv = cl2m.generate(X, **params)
+            # self.assertFalse((X == x_test_adv).all())
+            target = np.argmax(params['y'], axis=1)
+            y_pred_adv = np.argmax(classifier.predict(x_test_adv), axis=1)
+            # self.assertTrue((target == y_pred_adv).any())
+            print(y == target)
+            acc = np.sum(y_pred_adv == y) / y.shape[0]
             print('Classifier before adversarial training')
             print('Accuracy on adversarial samples: %.2f%%' % (acc * 100))
+            acc = np.sum(y_pred_adv == target) / target.shape[0]
+            print('Classifier before adversarial training')
+            print('Accuracy on adversarial samples: %.2f%%' % (acc * 100))
+
+            # adv_crafter = CarliniL2Method(classifier)
+            # x_adv = adv_crafter.generate(x=X, y=y)
+            # # save adversary samples to file
+            # np.savetxt('adv_carlini.out', x_adv, delimiter=',')
+            # # Evaluate the classifier on the adversarial samples
+            # preds = np.argmax(classifier.predict(x_adv), axis=1)
+            # acc = np.sum(preds == y) / y.shape[0]
+            # print('Classifier before adversarial training')
+            # print('Accuracy on adversarial samples: %.2f%%' % (acc * 100))
         else:
             print('ERROR: Unsupported crafter type')
 
