@@ -181,7 +181,7 @@ def dump_feature_basecount_from_file_list(config, file_list):
     pysie = PySIE(config)
     return pysie.dump_feature_basecount_from_file_list(file_list)
 
-def dump_feature_basecount_multi_thread(config, target_path, dest_path):
+def dump_feature_basecount_multi_thread(config, target_path, dest_path, src_path=None):
     thread_num = get_thread_num(config)
     file_list_map = generate_file_list_map(thread_num, target_path)
 
@@ -194,12 +194,19 @@ def dump_feature_basecount_multi_thread(config, target_path, dest_path):
     pool.join()
     
     # merge output
-    result = {}
+    if src_path:
+        with open(src_path, 'rb') as fh:
+            result = json.load(fh)
+    else:
+        result = {}
     for feature_base_dict in result_feature_basecount:
         feature_base_dict = feature_base_dict.get()
         result = update_feature_base(result, feature_base_dict)
+    
 
     # save result
+    
+        
     with open(dest_path, 'w') as fh:
         fh.write(json.dumps(result))
 
@@ -249,7 +256,7 @@ PySIE Usage:
         Note:
             a) after prediction, this command will dump statistical information into console.
     3) dump feature base count
-        >> python pysie.py --dump-featurebase target_path --dest-file [dest_file_path]
+        >> python pysie.py --dump-featurebase target_path --dest-file dest_file_path  [--src-fle src_file_path]
 
 Feature Index:
     0-499    DOM features
@@ -277,12 +284,14 @@ if __name__ == '__main__':
     parser = OptionParser(usage=help_msg)
     parser.add_option("--dump-feature", dest="dump_feature_target_path",
                       help="specify target path", metavar="TARGET-PATH")
+    parser.add_option("--dump-featurebase", dest="dump_featurebase_target_path",
+                      help="specify target path", metavar="TARGET-PATH")                      
     parser.add_option("--label", dest="label",
                       help="specify label for target category", metavar="LABEL")
     parser.add_option("--dest-file", dest="dest_file",
                       help="specify destination file path", metavar="DEST-FILE")
-    parser.add_option("--dump-featurebase", dest="dump_featurebase_target_path",
-                      help="specify target path", metavar="TARGET-PATH")                      
+    parser.add_option("--src-file", dest="src_file",
+                      help="specify src feature basecount file path", metavar="SRC-FILE")
 
     (options, args) = parser.parse_args()
     # set config in logging
@@ -304,7 +313,7 @@ if __name__ == '__main__':
                 dump_feature_multi_thread(config, int(options.label),
                                         options.dump_feature_target_path, options.dest_file)
         else:
-            dump_feature_basecount_multi_thread(config, options.dump_featurebase_target_path, options.dest_file)
+            dump_feature_basecount_multi_thread(config, options.dump_featurebase_target_path, options.dest_file, options.src_file)
 
         msg = 'Time: {}'.format(time.time() - begin_time)
         info(msg)
