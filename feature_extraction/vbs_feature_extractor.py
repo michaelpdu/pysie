@@ -12,13 +12,18 @@ class VBSFeatureExtractor:
         self.yara_feature_analyzer = YaraFeatureAnalyzer(vbs_feature_rules)
         self.base_index_ = config['vbs_base_index']
         self.vbs_hist_base_index_ = config['vbs_hist_base_index']
+        self.vbs_length_ = 0
 
-    def extract_vbs_features(self, file_path, content):
+    def convert_vbs_content(self, content):
         if isinstance(content, unicode):
             converted_content = content.encode('utf-8', errors='replace')
         else:  # isinstance(s, str):
             converted_content = unicode(content, encoding='utf-8', errors='replace')
+        self.vbs_length_ = len(converted_content)
+        return converted_content
 
+    def extract_vbs_features(self, file_path, content):
+        converted_content = self.convert_vbs_content(content)
         vbs_features = {}
         if self.config_['enable_vbs_yara_keyword']:
             try:
@@ -28,8 +33,8 @@ class VBSFeatureExtractor:
             except Exception,e:
                 print '[Exception][extract_vbs_features.yara_feature_analyzer] File: {}, Exception: {}'.format(file_path, str(e))
             vbs_features.update(vbs_yara_features)
-	else:
-	    print 'disable vbs yara keyword feature extract'
+        else:
+            print 'disable vbs yara keyword feature extract'
         # update histogram features
         hist = Histogram()
         for ch in content:

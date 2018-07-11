@@ -4,6 +4,7 @@ import sys
 import json
 import collections
 import time
+import types
 from optparse import OptionParser
 from sie_feature_extractor import *
 from raw_content_extractor import *
@@ -33,7 +34,18 @@ class PySIE:
                     warning('[WARNING][PySIE.extract_feature] Unknown File Type, file path: ' + file_path)
                     return {}
                 return features
-
+                            
+    def dump_feature_basecount_for_normalization(self, file_path):
+        info('Extract feature: '+file_path)
+        with open(file_path, 'rb') as fh:
+            content = fh.read()
+            feature_extractor = SIEFeatureExtractor(self.config_['feature_extraction'])
+            features = feature_extractor.dump_feature_basecount_for_normalization(file_path, content)
+            if features == None:
+                warning('[WARNING][PySIE.extract_feature] Unknown File Type, file path: ' + file_path)
+                return {}
+            return features
+    
     def convert_to_libsvm_format(self, label, features, comments):
         feature_msg = ''
         if isinstance(features, dict):
@@ -80,6 +92,16 @@ class PySIE:
                     output.write(feature_line)
                 except Exception,e:
                     print( '[ERROR] cannot extract feature on {}, exception is {}'.format(file_path, str(e)) )
+    
+    def dump_feature_basecount_from_file_list(self, file_list):
+        feature_base_dict = {}
+        for filepath in file_list:
+            try:
+                feature_dict = self.dump_feature_basecount_for_normalization(filepath)
+                feature_base_dict = update_feature_base(feature_base_dict, feature_dict)
+            except Exception,e:
+                    print( '[ERROR] cannot extract feature on {}, exception is {}'.format(filepath, str(e)) )
+        return feature_base_dict
 
     def load_model(self, model_path):
         pass
@@ -87,22 +109,38 @@ class PySIE:
     def predict(self, target_path):
         pass
 
+def update_feature_base(feature_base_dict, feature_dict):
+    for key in feature_dict:
+        value = feature_dict[key]
+        if type(value) == types.IntType:
+            # js_length, vbs_length, num_external_link_script, num_internal_script
+            if key not in feature_base_dict:
+                feature_base_dict[key] = 0
+            if feature_base_dict[key] < value:
+                feature_base_dict[key] = value
+        elif type(value) == types.DictionaryType:
+            if key not in feature_base_dict:
+                feature_base_dict[key] = {}
+            for subkey in value:
+                subvalue = value[subkey]
+                if subkey not in feature_base_dict[key]:
+                    feature_base_dict[key][subkey] = 0
+                if feature_base_dict[key][subkey] < subvalue:
+                    feature_base_dict[key][subkey] = subvalue
+        else:
+            print "[Eroor] Unsupport feature basecount type"
+    return feature_base_dict
 
-def process_file_list_by_pysie(config, id, label, file_list, dest_file):
-    msg = 'Run process: {}, size of file_list: {}'.format(id, len(file_list))
-    info(msg)
-    print(msg)
-    pysie = PySIE(config)
-    pysie.dump_feature_from_file_list(label, file_list, dest_file)
-
-def dump_feature_multi_thread(config, label, target_path, dest_path):
+def get_thread_num(config):
     thread_num = config['common']['thread_num']
     if config['common']['use_system_cpu_num']:
         thread_num = multiprocessing.cpu_count()
         info('Use CPU number, thread number is {}'.format(thread_num))
     else:
         info('Use default config, thread number is {}'.format(thread_num))
+    return thread_num
 
+def generate_file_list_map(thread_num, target_path):
     file_list_map = {}
     for i in range(0,thread_num):
         file_list_map[i] = []
@@ -127,7 +165,48 @@ def dump_feature_multi_thread(config, label, target_path, dest_path):
         else:
             print '[ERROR] multi-thread only process folder'
             exit(-1)
-    #
+    return  file_list_map
+
+def process_file_list_by_pysie(config, id, label, file_list, dest_file):
+    msg = 'Run process: {}, size of file_list: {}'.format(id, len(file_list))
+    info(msg)
+    print(msg)
+    pysie = PySIE(config)
+    pysie.dump_feature_from_file_list(label, file_list, dest_file)
+
+def dump_feature_basecount_from_file_list(config, file_list):
+    msg = 'Run process: {}, size of file_list: {}'.format(id, len(file_list))
+    info(msg)
+    print(msg)
+    pysie = PySIE(config)
+    return pysie.dump_feature_basecount_from_file_list(file_list)
+
+def dump_feature_basecount_multi_thread(config, target_path, dest_path):
+    thread_num = get_thread_num(config)
+    file_list_map = generate_file_list_map(thread_num, target_path)
+
+    # dump feature basecount 
+    pool = multiprocessing.Pool(processes=thread_num)
+    result_feature_basecount = []
+    for i in range(0,thread_num):
+        result_feature_basecount.append(pool.apply_async(dump_feature_basecount_from_file_list, (config, file_list_map[i])))
+    pool.close()
+    pool.join()
+    
+    # merge output
+    result = {}
+    for feature_base_dict in result_feature_basecount:
+        feature_base_dict = feature_base_dict.get()
+        result = update_feature_base(result, feature_base_dict)
+
+    # save result
+    with open(dest_path, 'w') as fh:
+        fh.write(json.dumps(result))
+
+def dump_feature_multi_thread(config, label, target_path, dest_path):
+    thread_num = get_thread_num(config)
+    file_list_map = generate_file_list_map(thread_num, target_path)
+
     proc_list = []
     file_path_wo_filename, filename = os.path.split(dest_path)
     filename_wo_ext, ext = os.path.splitext(filename)
@@ -165,10 +244,12 @@ PySIE Usage:
         Note:
             a) if dest_file_path is not specified, feature list will be dumped into original_file_name.libsvm.fea
             b) label is 1 or 0, here 1 indicates malicious, 0 indicates normal
-    2) load model and predict target
+    2) [not implemented] load model and predict target 
         >> python pysie.py --model-type [svm|xgboost|...] --model model_path --predict target_path
         Note:
             a) after prediction, this command will dump statistical information into console.
+    3) dump feature base count
+        >> python pysie.py --dump-featurebase target_path --dest-file [dest_file_path]
 
 Feature Index:
     0-499    DOM features
@@ -200,30 +281,34 @@ if __name__ == '__main__':
                       help="specify label for target category", metavar="LABEL")
     parser.add_option("--dest-file", dest="dest_file",
                       help="specify destination file path", metavar="DEST-FILE")
+    parser.add_option("--dump-featurebase", dest="dump_featurebase_target_path",
+                      help="specify target path", metavar="TARGET-PATH")                      
 
     (options, args) = parser.parse_args()
     # set config in logging
     basicConfig(filename='pysie.log', format='[%(asctime)s][%(levelname)s] - %(message)s', level=INFO)
 
-    if options.dump_feature_target_path:
+    if options.dump_feature_target_path or options.dump_featurebase_target_path:
         with open('pysie.cfg', 'rb') as fh:
             config = json.load(fh)
         info('Load config from pysie.cfg')
 
         begin_time = time.time()
-        pysie = PySIE(config)
-        # print pysie.convert_to_libsvm_format(1, {1:1,3:0.5,45:1}, 'comments')
-
-        if config['common']['thread_num'] == 1:
-            info('Single thread mode')
-            pysie.dump_feature(int(options.label), options.dump_feature_target_path, options.dest_file)
+        if options.dump_feature_target_path:
+            if config['common']['thread_num'] == 1:
+                info('Single thread mode')
+                pysie = PySIE(config)
+                pysie.dump_feature(int(options.label), options.dump_feature_target_path, options.dest_file)
+            else:
+                info('Multiple thread mode')
+                dump_feature_multi_thread(config, int(options.label),
+                                        options.dump_feature_target_path, options.dest_file)
         else:
-            info('Multiple thread mode')
-            dump_feature_multi_thread(config, int(options.label),
-                                      options.dump_feature_target_path, options.dest_file)
+            dump_feature_basecount_multi_thread(config, options.dump_featurebase_target_path, options.dest_file)
 
         msg = 'Time: {}'.format(time.time() - begin_time)
         info(msg)
         print(msg)
+
     else:
         print help_msg

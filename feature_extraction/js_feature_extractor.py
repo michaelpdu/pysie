@@ -57,6 +57,8 @@ class JSFeatureExtractor:
         self.string_feature_extractor = StringFeatureExtractor(config_map['js_engine_feature_index'])
         self.base_index_ = config_map['js_base_index']
         self.js_hist_base_index_ = config_map['js_hist_base_index']
+        self.js_length_ = 0
+        
 
     def extract_big_string(self, content):
         try:
@@ -76,14 +78,17 @@ class JSFeatureExtractor:
             print traceback.print_stack(file=sys.stdout)
             return []
 
+    def convert_js_content(self, content):
+        if isinstance(content, unicode):
+            converted_content = content.encode('utf-8', errors='replace')
+        else:  # isinstance(s, str):
+            converted_content = unicode(content, encoding='utf-8', errors='replace')
+        self.js_length_ = len(converted_content)
+        return converted_content
 
     def extract_js_features(self, file_path, content):
         try:
-            if isinstance(content, unicode):
-                converted_content = content.encode('utf-8', errors='replace')
-            else:  # isinstance(s, str):
-                converted_content = unicode(content, encoding='utf-8', errors='replace')
-
+            converted_content = self.convert_js_content(content)
             # analyze all of big string from JavaScript code, and extract string features
             # big_strings = self.extract_big_string(converted_content)
             # big_string_features = self.string_feature_extractor.extract_string_features(big_strings)
@@ -100,8 +105,8 @@ class JSFeatureExtractor:
 
                 # js_features = dict(big_string_features)
                 js_features.update(js_yara_features)
-	    else:
-		print 'diable js yara keyword extract'
+            else:
+                print 'diable js yara keyword extract'
             # update histogram features
             hist = Histogram()
             for ch in content:

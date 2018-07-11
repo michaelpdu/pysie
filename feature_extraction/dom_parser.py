@@ -17,6 +17,7 @@ class DOMParser:
         self.soup_ = None
         self.js_content_list = []
         self.vbs_content_list =[]
+        self.tag_num_map_raw_ = {}
         self.tag_num_map_ = {}
         for item in self.dom_tag_list_:
             self.tag_num_map_[item] = 0
@@ -28,6 +29,7 @@ class DOMParser:
         self.num_external_link_script_ = 0
         self.num_internal_script_ = 0
         # tag_relationship map
+        self.tag_relation_map_raw_ = {}
         self.tag_relation_map_ = {}
         self.dom_tag_relation_base_ = config['dom_tag_relation_base']
         for key in self.dom_tag_relation_base_.keys():
@@ -52,12 +54,19 @@ class DOMParser:
                     self.tag_num_map_[tag.name] += 1
                 else:
                     self.tag_num_map_['unknown'] += 1
+                
+                if not tag.name in self.tag_num_map_raw_:
+                    self.tag_num_map_raw_[tag.name] = 1
+                else:
+                    self.tag_num_map_raw_[tag.name] += 1
+                    
+                    
 
         # save all of scripts
-        info('Save all of scripts')
+        info('Save all of scripts') 
         scripts = self.soup_.find_all('script')
         for script in scripts:
-            if 'src' in script:
+            if 'src' in script.attrs:
                 self.num_external_link_script_ += 1
             else:
                 self.num_internal_script_ += 1
@@ -79,11 +88,13 @@ class DOMParser:
                     parent = child.parent
                     parent_name = getattr(parent, "name", None)
                     tag_relationship = '{}-{}'.format(parent_name, name)
-
                     if tag_relationship in self.tag_relation_map_.keys():
                         self.tag_relation_map_[tag_relationship] += 1
-                    # else:
-                    #     self.tag_relation_map_[tag_relationship] = 1
+
+                    if not tag_relationship in self.tag_relation_map_raw_:
+                        self.tag_relation_map_raw_[tag_relationship] = 0                        
+                    else:   
+                        self.tag_relation_map_raw_[tag_relationship] += 1
 
             elif not child.isspace():
                 if self.config_['enable_big_leaf_uni_gram']     \
@@ -103,7 +114,8 @@ class DOMParser:
             index = self.config_['manual_keywords_base_index']
             manual_yara_fea_analyzer.analyze_content(content, index)
             self.dom_features.update(manual_yara_fea_analyzer.get_features())
-
+     
+    
     def get_tag_relationship_statistic(self):
         return self.tag_relation_map_
 
