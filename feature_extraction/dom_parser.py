@@ -17,7 +17,6 @@ class DOMParser:
         self.soup_ = None
         self.js_content_list = []
         self.vbs_content_list =[]
-        self.tag_num_map_raw_ = {}
         self.tag_num_map_ = {}
         for item in self.dom_tag_list_:
             self.tag_num_map_[item] = 0
@@ -54,13 +53,7 @@ class DOMParser:
                     self.tag_num_map_[tag.name] += 1
                 else:
                     self.tag_num_map_['unknown'] += 1
-                
-                if not tag.name in self.tag_num_map_raw_:
-                    self.tag_num_map_raw_[tag.name] = 1
-                else:
-                    self.tag_num_map_raw_[tag.name] += 1
-                    
-                    
+
 
         # save all of scripts
         info('Save all of scripts') 

@@ -50,7 +50,7 @@ class SIEFeatureExtractor:
         features = {}
         self.dom_parser_.parse_content(content)
         if self.config_['enable_dom_feature'] > 0:
-            features["tag_num_map_raw"] = self.dom_parser_.tag_num_map_raw_
+            features["tag_num_map_raw"] = self.dom_parser_.tag_num_map_
             features["tag_relation_map_raw"] = self.dom_parser_.tag_relation_map_raw_
             features["num_external_link_script"] = self.dom_parser_.num_external_link_script_
             features["num_internal_script"] = self.dom_parser_.num_internal_script_
