@@ -1,0 +1,28 @@
+{
+	"common": {
+        "use_talos": true,
+        "use_system_cpu_num": false,
+        "thread_num": 4,
+		"search_best_params": true,
+		"model_name": "tss_xgb_20180711.model",
+		"mid_folder": "/sa/middle_dir/tss"
+	},
+	"filesystem": {
+		"training_set_malicious": {
+			"train_tss_malicious.txt": "/sa/middle_dir/train_tss_malicious",
+			"train_fakewarning_malicious.txt": "/sa/middle_dir/train_fakewarning_malicious"
+		},
+		"training_set_normal": {
+			"train_normal_unique_normal.txt": "/sa/middle_dir/train_normal_unique_normal",
+			"train_tss_fa_normal.txt": "/sa/middle_dir/train_tss_fa_normal"
+		},
+		"validation_set_malicious": {
+			"validation_tss_malicious.txt": "/sa/middle_dir/validation_tss_malicious",
+			"validation_fakearning_malicious.txt": "/sa/middle_dir/validation_fakearning_malicious"
+		},
+		"validation_set_normal": {
+			"alexa_top.txt": "/sa/middle_dir/alexa_top",
+			"tss_fa": "/sa/middle_dir/tss_fa"
+		}
+	}
+}
